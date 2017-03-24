@@ -1,7 +1,12 @@
-#!/usr/bin/env bash
-#
+#!/bin/bash -ex
 # AWS user data script for setting up Iris on Centos7
 #
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+
+# Record start time stamp
+timestamp=$(date)
+echo "User Data Script Start at: ${timestamp}"
+
 echo "Setup Script Variables"
 USERNAME=vncgui1
 USER_PASSWORD=changeit
