@@ -83,6 +83,3 @@ yum -y install tigervnc-server
 echo "X-GNOME-Autostart-enabled=false" | tee -a /etc/xdg/autostart/gnome-software-service.desktop
 systemctl start xrdp.service
 systemctl enable xrdp.service
-
-# Reboot
-suhtdown -r now
