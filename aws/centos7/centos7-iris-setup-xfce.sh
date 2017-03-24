@@ -32,18 +32,6 @@ while getopts "p:i" opt; do
   esac
 done
 
-echo "Setting Up Iris DB Volume"
-DEVICE=$(lsblk | tail -1 | tr -s ' ' | cut -d ' ' -f 1)
-if [ "$(file -s /dev/$DEVICE)" = "/dev/${DEVICE}: data" ]
-then
-    mkfs -t ext4 /dev/$DEVICE
-    mkdir /db
-    mount /dev/$DEVICE /db
-    cp /etc/fstab /etc/fstab.orig
-    UUID=$(ls -al /dev/disk/by-uuid/ | grep $DEVICE | tr -s ' ' | cut -d ' ' -f 9)
-    echo -e "UUID=${UUID} /db\text4\tdefaults,nofail\t0 2" >> /etc/fstab
-fi
-
 echo "Adding Iris GUI User Account"
 adduser $USERNAME
 usermod -aG wheel $USERNAME
@@ -70,15 +58,29 @@ yum install -y lighttpd
 yum install -y bzip2
 yum install -y git
 
+echo "Setting Up Iris DB Volume"
+DEVICE=$(lsblk | tail -1 | tr -s ' ' | cut -d ' ' -f 1)
+if [ "$(file -s /dev/$DEVICE)" = "/dev/${DEVICE}: data" ]
+then
+    mkfs -t ext4 /dev/$DEVICE
+    mkdir /db
+    mount /dev/$DEVICE /db
+    cp /etc/fstab /etc/fstab.orig
+    UUID=$(ls -al /dev/disk/by-uuid/ | grep $DEVICE | tr -s ' ' | cut -d ' ' -f 9)
+    echo -e "UUID=${UUID} /db\text4\tdefaults,nofail\t0 2" >> /etc/fstab
+fi
+
 echo "Setting PATHs"
 echo 'export JAVA_HOME=$(dirname $(dirname $(readlink /etc/alternatives/javac)))' >> "/home/$USERNAME/.bash_profile"
 echo 'export PATH=$JAVA_HOME/bin:$PATH' >> "/home/$USERNAME/.bash_profile"
 
 echo "Installing XFCE Desktop"
+
+yum -y groups install "X Window system"
 yum -y groups install "xfce"
 
 echo "Installing XRDP"
 yum -y install xrdp tigervnc-server
-echo "X-GNOME-Autostart-enabled=false" | tee -a /etc/xdg/autostart/gnome-software-service.desktop
+#echo "X-GNOME-Autostart-enabled=false" | tee -a /etc/xdg/autostart/gnome-software-service.desktop
 systemctl start xrdp.service
 systemctl enable xrdp.service
