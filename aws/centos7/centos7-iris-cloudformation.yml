@@ -49,11 +49,8 @@ Parameters:
     Description: URL to the centos7-iris-setup.sh script used to configure the EC2 instance
     AllowedPattern: '^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]'
     ConstraintDescription: Must be a valid HTTP or HTTPS URL
-    Default: 'https://raw.githubusercontent.com/greg2020/iris-setup/master/aws/centos7/iris-bhs.sh'
-
-  VolumeSnapshotId:
-    Type: String
-    Description: Snapshot from which to create the db volume (optional)
+    Default: 'https://raw.githubusercontent.com/greg2020/iris-setup/master/aws/centos7/centos7-iris-setup-disk.sh'
+    #Default: 'https://raw.githubusercontent.com/greg2020/iris-setup/master/aws/centos7/centos7-iris-setup.sh'
 
   VolumeSize:
     Type: Number
@@ -82,7 +79,6 @@ Parameters:
 
 Conditions:
   UseIamInstanceProfile: !Not [!Equals [!Ref IamInstanceProfile, ""]]
-  UseVolumeSnapshot: !Not [!Equals [!Ref VolumeSnapshotId, ""]]
   AddPublicIpAddress: !Equals [!Ref PublicIpAddress, "true"]
   UseCustomAmi: !Not [!Equals [!Ref CustomAmiId, ""]]
 
@@ -138,18 +134,17 @@ Resources:
           Ref: SubnetId
       UserData:
         Fn::Base64: !Sub |
-          #!/bin/bash -xe
+          #!/bin/bash
           curl -o /opt/centos7-iris-setup.sh -fsSL ${SetupScriptUrl}
           chmod u+x /opt/centos7-iris-setup.sh
-          cd /opt
-          . .//opt/centos7-iris-setup.sh -p ${UserPassword}
+          . /opt/centos7-iris-setup.sh -p ${UserPassword}
+          shutdown -r now
 
   NewVolume:
       Type: AWS::EC2::Volume
       Properties:
         Size: !Ref VolumeSize
         AvailabilityZone: !GetAtt Ec2Instance.AvailabilityZone
-        SnapshotId: !If [UseVolumeSnapshot, !Ref VolumeSnapshotId, !Ref "AWS::NoValue"]
         VolumeType: !Ref VolumeType
         Tags:
         - Key: Name
@@ -179,8 +174,6 @@ Metadata:
         - KeyName
         - SubnetId
         - SecurityGroupId
-        - HttpProxy
-        - HttpsProxy
     - Label:
         default: Instance Settings
       Parameters:
@@ -190,13 +183,11 @@ Metadata:
         - PublicIpAddress
         - SetupScriptUrl
         - UserPassword
-        - IntelliJEdition
     - Label:
         default: Volume Settings
       Parameters:
         - VolumeType
         - VolumeSize
-        - VolumeSnapshotId
     ParameterLabels:
       KeyName:
         default: Key Name
@@ -204,10 +195,6 @@ Metadata:
         default: Subnet ID
       SecurityGroupId:
         default: Security Group ID
-      HttpProxy:
-        default: HTTP Proxy URL
-      HttpsProxy:
-        default: HTTPS Proxy URL
       InstanceType:
         default: Instance Type
       CustomAmiId:
@@ -218,13 +205,9 @@ Metadata:
         default: Add Public IP Address
       SetupScriptUrl:
         default: URL to Setup Script
-      IntelliJEdition:
-        default: IntelliJ IDEA Edition
       IamInstanceProfile:
         default: IAM Instance Profile
       VolumeType:
         default: Volume Type
       VolumeSize:
         default: Volume Size
-      VolumeSnapshotId:
-        default: Volume Snapshot ID
