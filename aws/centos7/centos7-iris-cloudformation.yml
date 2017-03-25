@@ -49,8 +49,7 @@ Parameters:
     Description: URL to the centos7-iris-setup.sh script used to configure the EC2 instance
     AllowedPattern: '^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]'
     ConstraintDescription: Must be a valid HTTP or HTTPS URL
-    Default: 'https://raw.githubusercontent.com/greg2020/iris-setup/master/aws/centos7/centos7-iris-setup-disk.sh'
-    #Default: 'https://raw.githubusercontent.com/greg2020/iris-setup/master/aws/centos7/centos7-iris-setup.sh'
+    Default: 'https://raw.githubusercontent.com/greg2020/iris-setup/master/aws/centos7/centos7-iris-setup-gnome.sh'
 
   VolumeSize:
     Type: Number
